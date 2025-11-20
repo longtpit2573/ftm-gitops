@@ -8,7 +8,7 @@ metadata:
     tier: backend
 spec:
   # Số lượng pod replica
-  replicas: 2
+  replicas: 1
   
   # Chiến lược update: RollingUpdate để zero-downtime
   strategy:
