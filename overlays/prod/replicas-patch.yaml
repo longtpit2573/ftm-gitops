@@ -1,14 +1,14 @@
-# Production: 2 replicas
+# Production: 1 replica
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ftm-backend
 spec:
-  replicas: 2
+  replicas: 1
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ftm-frontend
 spec:
-  replicas: 2
+  replicas: 1
