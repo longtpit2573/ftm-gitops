@@ -1,0 +1,56 @@
+# ArgoCD Project - Tổ chức applications theo project
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ftm-project
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  description: Family Tree Management Project
+  
+  # Source repositories cho phép
+  sourceRepos:
+    - 'https://github.com/longtpit2573/ftm-gitops.git'  # GitOps repo
+    - 'https://github.com/longtpit2573/FTM-BE.git'  # Backend repo
+    - 'https://github.com/longtpit2573/FTM-FE.git'  # Frontend repo
+  
+  # Destinations cho phép deploy
+  destinations:
+    - namespace: 'ftm-*'  # Tất cả namespaces bắt đầu với ftm-
+      server: https://kubernetes.default.svc
+    - namespace: argocd
+      server: https://kubernetes.default.svc
+  
+  # Cluster resources cho phép
+  clusterResourceWhitelist:
+    - group: ''
+      kind: Namespace
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRole
+    - group: 'rbac.authorization.k8s.io'
+      kind: ClusterRoleBinding
+  
+  # Namespace resources cho phép
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
+  
+  # Roles - Permissions cho team members
+  roles:
+    # Developer role - chỉ xem được
+    - name: developer
+      description: Developer có thể xem applications
+      policies:
+        - p, proj:ftm-project:developer, applications, get, ftm-project/*, allow
+        - p, proj:ftm-project:developer, applications, sync, ftm-project/ftm-dev, allow
+      groups:
+        - ftm-developers
+    
+    # DevOps role - full control
+    - name: devops
+      description: DevOps có thể quản lý tất cả
+      policies:
+        - p, proj:ftm-project:devops, applications, *, ftm-project/*, allow
+      groups:
+        - ftm-devops
