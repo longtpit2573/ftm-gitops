@@ -61,12 +61,6 @@ controller:
                 containerCapStr: "10"
                 maxRequestsPerHostStr: "32"
                 
-                # Default pod template volumes (for agent any)
-                volumes:
-                  - hostPathVolume:
-                      hostPath: "/var/run/docker.sock"
-                      mountPath: "/var/run/docker.sock"
-                
                 templates:
                   # CI/CD Builder with Docker (using host Docker socket)
                   - name: "docker-builder"
