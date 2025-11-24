@@ -1,0 +1,184 @@
+# Jenkins Helm Chart Values
+# Configures Jenkins with Kubernetes plugin and pod templates for CI/CD
+
+controller:
+  admin:
+    username: "admin"
+    password: "Admin@123456"
+  
+  # Resource limits for Jenkins controller
+  resources:
+    requests:
+      cpu: "500m"
+      memory: "1Gi"
+    limits:
+      cpu: "2000m"
+      memory: "4Gi"
+  
+  # Jenkins Controller JVM options
+  javaOpts: "-Xmx2g -Xms1g"
+  
+  # Service type
+  serviceType: ClusterIP
+  servicePort: 8080
+  
+  # Ingress handled separately
+  ingress:
+    enabled: false
+  
+  # Install recommended plugins (without version pins for automatic dependency resolution)
+  installPlugins:
+    - kubernetes:latest
+    - workflow-aggregator:latest
+    - git:latest
+    - github:latest
+    - github-branch-source:latest
+    - configuration-as-code:latest
+    - docker-workflow:latest
+    - kubernetes-cli:latest
+    - credentials-binding:latest
+    - pipeline-stage-view:latest
+  
+  # Jenkins Configuration as Code
+  JCasC:
+    defaultConfig: true
+    configScripts:
+      welcome-message: |
+        jenkins:
+          systemMessage: "FTM CI/CD Pipeline - Powered by Jenkins on Kubernetes"
+      
+      kubernetes-cloud: |
+        jenkins:
+          clouds:
+            - kubernetes:
+                name: "kubernetes"
+                serverUrl: "https://kubernetes.default"
+                namespace: "jenkins"
+                jenkinsUrl: "http://jenkins:8080"
+                jenkinsTunnel: "jenkins-agent:50000"
+                connectTimeout: 5
+                readTimeout: 15
+                containerCapStr: "10"
+                maxRequestsPerHostStr: "32"
+                
+                templates:
+                  # Backend Builder Pod Template (.NET + Docker)
+                  - name: "backend-builder"
+                    namespace: "jenkins"
+                    label: "backend-builder"
+                    nodeUsageMode: "NORMAL"
+                    serviceAccount: "jenkins"
+                    
+                    containers:
+                      - name: "dotnet"
+                        image: "mcr.microsoft.com/dotnet/sdk:7.0"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        command: "sleep"
+                        args: "infinity"
+                        ttyEnabled: true
+                        resourceRequestCpu: "500m"
+                        resourceRequestMemory: "1Gi"
+                        resourceLimitCpu: "2000m"
+                        resourceLimitMemory: "3Gi"
+                      
+                      - name: "docker"
+                        image: "docker:24-dind"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        privileged: true
+                        ttyEnabled: true
+                        resourceRequestCpu: "500m"
+                        resourceRequestMemory: "1Gi"
+                        resourceLimitCpu: "1500m"
+                        resourceLimitMemory: "2Gi"
+                        envVars:
+                          - envVar:
+                              key: "DOCKER_TLS_CERTDIR"
+                              value: ""
+                      
+                      - name: "kubectl"
+                        image: "bitnami/kubectl:latest"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        command: "sleep"
+                        args: "infinity"
+                        ttyEnabled: true
+                        resourceRequestCpu: "100m"
+                        resourceRequestMemory: "128Mi"
+                        resourceLimitCpu: "200m"
+                        resourceLimitMemory: "256Mi"
+                    
+                    volumes:
+                      - emptyDirVolume:
+                          mountPath: "/var/lib/docker"
+                          memory: false
+                  
+                  # Frontend Builder Pod Template (Node + Docker)
+                  - name: "frontend-builder"
+                    namespace: "jenkins"
+                    label: "frontend-builder"
+                    nodeUsageMode: "NORMAL"
+                    serviceAccount: "jenkins"
+                    
+                    containers:
+                      - name: "node"
+                        image: "node:18-alpine"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        command: "sleep"
+                        args: "infinity"
+                        ttyEnabled: true
+                        resourceRequestCpu: "500m"
+                        resourceRequestMemory: "1Gi"
+                        resourceLimitCpu: "2000m"
+                        resourceLimitMemory: "2Gi"
+                      
+                      - name: "docker"
+                        image: "docker:24-dind"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        privileged: true
+                        ttyEnabled: true
+                        resourceRequestCpu: "500m"
+                        resourceRequestMemory: "1Gi"
+                        resourceLimitCpu: "1500m"
+                        resourceLimitMemory: "2Gi"
+                        envVars:
+                          - envVar:
+                              key: "DOCKER_TLS_CERTDIR"
+                              value: ""
+                      
+                      - name: "kubectl"
+                        image: "bitnami/kubectl:latest"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        command: "sleep"
+                        args: "infinity"
+                        ttyEnabled: true
+                        resourceRequestCpu: "100m"
+                        resourceRequestMemory: "128Mi"
+                        resourceLimitCpu: "200m"
+                        resourceLimitMemory: "256Mi"
+                    
+                    volumes:
+                      - emptyDirVolume:
+                          mountPath: "/var/lib/docker"
+                          memory: false
+
+# Persistence for Jenkins data
+persistence:
+  enabled: true
+  size: "20Gi"
+  storageClass: "default"
+
+# Service Account
+serviceAccount:
+  create: true
+  name: jenkins
+  annotations: {}
+
+# RBAC
+rbac:
+  create: true
+  readSecrets: true

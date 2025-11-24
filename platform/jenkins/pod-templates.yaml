@@ -1,0 +1,126 @@
+# Jenkins Pod Templates for CI/CD Pipelines
+# This file defines reusable Kubernetes pod templates for Jenkins agents
+
+jenkins:
+  clouds:
+    - kubernetes:
+        name: "kubernetes"
+        serverUrl: "https://kubernetes.default"
+        namespace: "jenkins"
+        jenkinsUrl: "http://jenkins:8080"
+        jenkinsTunnel: "jenkins-agent:50000"
+        connectTimeout: 5
+        readTimeout: 15
+        containerCapStr: "10"
+        maxRequestsPerHostStr: "32"
+        
+        templates:
+          # Backend Pipeline Template - .NET + Docker
+          - name: "backend-builder"
+            namespace: "jenkins"
+            label: "backend-builder"
+            nodeUsageMode: NORMAL
+            serviceAccount: "jenkins"
+            
+            containers:
+              # .NET SDK Container
+              - name: "dotnet"
+                image: "mcr.microsoft.com/dotnet/sdk:7.0"
+                alwaysPullImage: false
+                workingDir: "/home/jenkins/agent"
+                command: "sleep"
+                args: "infinity"
+                ttyEnabled: true
+                resourceRequestCpu: "500m"
+                resourceRequestMemory: "1Gi"
+                resourceLimitCpu: "2000m"
+                resourceLimitMemory: "3Gi"
+              
+              # Docker-in-Docker Container
+              - name: "docker"
+                image: "docker:24-dind"
+                alwaysPullImage: false
+                workingDir: "/home/jenkins/agent"
+                privileged: true
+                ttyEnabled: true
+                resourceRequestCpu: "500m"
+                resourceRequestMemory: "1Gi"
+                resourceLimitCpu: "1500m"
+                resourceLimitMemory: "2Gi"
+                envVars:
+                  - envVar:
+                      key: "DOCKER_TLS_CERTDIR"
+                      value: ""
+              
+              # Kubectl Container
+              - name: "kubectl"
+                image: "bitnami/kubectl:latest"
+                alwaysPullImage: false
+                workingDir: "/home/jenkins/agent"
+                command: "sleep"
+                args: "infinity"
+                ttyEnabled: true
+                resourceRequestCpu: "100m"
+                resourceRequestMemory: "128Mi"
+                resourceLimitCpu: "200m"
+                resourceLimitMemory: "256Mi"
+            
+            volumes:
+              - emptyDirVolume:
+                  mountPath: "/var/lib/docker"
+                  memory: false
+          
+          # Frontend Pipeline Template - Node.js + Docker
+          - name: "frontend-builder"
+            namespace: "jenkins"
+            label: "frontend-builder"
+            nodeUsageMode: NORMAL
+            serviceAccount: "jenkins"
+            
+            containers:
+              # Node.js Container
+              - name: "node"
+                image: "node:18-alpine"
+                alwaysPullImage: false
+                workingDir: "/home/jenkins/agent"
+                command: "sleep"
+                args: "infinity"
+                ttyEnabled: true
+                resourceRequestCpu: "500m"
+                resourceRequestMemory: "1Gi"
+                resourceLimitCpu: "2000m"
+                resourceLimitMemory: "2Gi"
+              
+              # Docker-in-Docker Container
+              - name: "docker"
+                image: "docker:24-dind"
+                alwaysPullImage: false
+                workingDir: "/home/jenkins/agent"
+                privileged: true
+                ttyEnabled: true
+                resourceRequestCpu: "500m"
+                resourceRequestMemory: "1Gi"
+                resourceLimitCpu: "1500m"
+                resourceLimitMemory: "2Gi"
+                envVars:
+                  - envVar:
+                      key: "DOCKER_TLS_CERTDIR"
+                      value: ""
+              
+              # Kubectl Container
+              - name: "kubectl"
+                image: "bitnami/kubectl:latest"
+                alwaysPullImage: false
+                workingDir: "/home/jenkins/agent"
+                command: "sleep"
+                args: "infinity"
+                ttyEnabled: true
+                resourceRequestCpu: "100m"
+                resourceRequestMemory: "128Mi"
+                resourceLimitCpu: "200m"
+                resourceLimitMemory: "256Mi"
+            
+            volumes:
+              - emptyDirVolume:
+                  mountPath: "/var/lib/docker"
+                  memory: false
