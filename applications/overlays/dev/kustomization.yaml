@@ -16,9 +16,9 @@ patchesStrategicMerge:
 # Jenkins sẽ update image tags này
 images:
   - name: acrftmbackenddev.azurecr.io/ftm-backend
-    newTag: v1.0.2
+    newTag: v1.0.3
   - name: acrftmfrontenddev.azurecr.io/ftm-frontend
-    newTag: latest
+    newTag: v1.0.2
 
 commonLabels:
   environment: dev
