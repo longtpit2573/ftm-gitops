@@ -61,13 +61,29 @@ controller:
                 containerCapStr: "10"
                 maxRequestsPerHostStr: "32"
                 
-                # Default pod template volumes (for agent any)
-                volumes:
-                  - hostPathVolume:
-                      hostPath: "/var/run/docker.sock"
-                      mountPath: "/var/run/docker.sock"
-                
                 templates:
+                  # Default agent pod (used by "agent any")
+                  - name: "default"
+                    label: "jenkins-jenkins-agent"
+                    namespace: "jenkins"
+                    nodeUsageMode: "NORMAL"
+                    serviceAccount: "jenkins"
+                    
+                    containers:
+                      - name: "jnlp"
+                        image: "jenkins/inbound-agent:latest"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "256Mi"
+                        resourceLimitCpu: "500m"
+                        resourceLimitMemory: "512Mi"
+                    
+                    volumes:
+                      - hostPathVolume:
+                          hostPath: "/var/run/docker.sock"
+                          mountPath: "/var/run/docker.sock"
+                  
                   # CI/CD Builder with Docker (using host Docker socket)
                   - name: "docker-builder"
                     namespace: "jenkins"
