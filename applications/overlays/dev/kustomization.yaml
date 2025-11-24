@@ -19,7 +19,8 @@ images:
   newName: acrftmbackenddev.azurecr.io/ftm-backend
   newTag: v1.0.14
 - name: acrftmfrontenddev.azurecr.io/ftm-frontend
-  newTag: v1.0.2
+  newName: acrftmfrontenddev.azurecr.io/ftm-frontend
+  newTag: v1.0.3
 
 commonLabels:
   environment: dev
