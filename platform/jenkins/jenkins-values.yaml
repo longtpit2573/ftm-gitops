@@ -201,14 +201,11 @@ controller:
                           mountPath: "/var/lib/docker"
                           memory: false
 
-# Additional agent configuration for Docker socket access
+# Default agent configuration (used by "agent any")
 agent:
-  volumes:
-    - type: HostPath
-      hostPath: /var/run/docker.sock
-      mountPath: /var/run/docker.sock
-  image: "jenkins/inbound-agent"
-  tag: "latest"
+  enabled: true
+  podName: "default"
+  customJenkinsLabels: []
   resources:
     requests:
       cpu: "200m"
@@ -216,6 +213,10 @@ agent:
     limits:
       cpu: "500m"
       memory: "512Mi"
+  volumes:
+    - type: HostPath
+      hostPath: /var/run/docker.sock
+      mountPath: /var/run/docker.sock
 
 # Persistence for Jenkins data
 persistence:
