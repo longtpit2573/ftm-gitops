@@ -207,14 +207,11 @@ controller:
                           mountPath: "/var/lib/docker"
                           memory: false
 
-# Default agent configuration (used by "agent any")
+# Default agent configuration
 agent:
   enabled: true
   podName: "default"
   customJenkinsLabels: []
-  image:
-    repository: jenkins/inbound-agent
-    tag: "latest-jdk17"
   resources:
     requests:
       cpu: "200m"
@@ -222,25 +219,6 @@ agent:
     limits:
       cpu: "500m"
       memory: "512Mi"
-  volumes:
-    - type: HostPath
-      hostPath: /var/run/docker.sock
-      mountPath: /var/run/docker.sock
-  sideContainerName: "docker"
-  sidecars:
-    - image: docker:24-cli
-      name: docker
-      command: "cat"
-      args: ""
-      ttyEnabled: true
-      privileged: false
-      resources:
-        requests:
-          cpu: "100m"
-          memory: "128Mi"
-        limits:
-          cpu: "200m"
-          memory: "256Mi"
 
 # Persistence for Jenkins data
 persistence:
