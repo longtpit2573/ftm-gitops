@@ -62,7 +62,7 @@ controller:
                 maxRequestsPerHostStr: "32"
                 
                 templates:
-                  # CI/CD Builder with Docker (using host Docker socket)
+                  # CI/CD Builder with Docker-in-Docker
                   - name: "docker-builder"
                     namespace: "jenkins"
                     label: "docker-builder"
@@ -71,15 +71,19 @@ controller:
                     
                     containers:
                       - name: "docker"
-                        image: "docker:24-cli"
+                        image: "docker:24-dind"
                         alwaysPullImage: false
                         workingDir: "/home/jenkins/agent"
-                        command: "cat"
+                        privileged: true
                         ttyEnabled: true
-                        resourceRequestCpu: "100m"
-                        resourceRequestMemory: "256Mi"
-                        resourceLimitCpu: "500m"
-                        resourceLimitMemory: "512Mi"
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "512Mi"
+                        resourceLimitCpu: "1000m"
+                        resourceLimitMemory: "1Gi"
+                        envVars:
+                          - envVar:
+                              key: "DOCKER_TLS_CERTDIR"
+                              value: ""
                       
                       - name: "kubectl"
                         image: "bitnami/kubectl:latest"
@@ -93,9 +97,9 @@ controller:
                         resourceLimitMemory: "256Mi"
                     
                     volumes:
-                      - hostPathVolume:
-                          hostPath: "/var/run/docker.sock"
-                          mountPath: "/var/run/docker.sock"
+                      - emptyDirVolume:
+                          mountPath: "/var/lib/docker"
+                          memory: false
                   
                   # Backend Builder Pod Template (.NET + Docker)
                   - name: "backend-builder"
