@@ -27,10 +27,6 @@ spec:
         app: ftm-backend
         tier: backend
     spec:
-      # Chạy pod trên node pool "workerpool" (User mode)
-      nodeSelector:
-        agentpool: workerpool
-      
       containers:
       - name: backend
         # Image từ Azure Container Registry

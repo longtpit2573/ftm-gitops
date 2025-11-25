@@ -26,9 +26,6 @@ spec:
         app: ftm-frontend
         tier: frontend
     spec:
-      nodeSelector:
-        agentpool: workerpool
-      
       containers:
       - name: frontend
         # Image từ ACR frontend
