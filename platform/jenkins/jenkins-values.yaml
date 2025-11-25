@@ -62,59 +62,45 @@ controller:
                 maxRequestsPerHostStr: "32"
                 
                 templates:
-                  # CI/CD Builder - Use image with Docker pre-installed
+                  # CI/CD Builder with Docker-in-Docker (same as backend-builder)
                   - name: "docker-builder"
                     namespace: "jenkins"
                     label: "docker-builder"
                     nodeUsageMode: "NORMAL"
                     serviceAccount: "jenkins"
-                    yaml: |
-                      apiVersion: v1
-                      kind: Pod
-                      spec:
-                        containers:
-                        - name: jnlp
-                          image: jenkins/inbound-agent:latest
-                          workingDir: /home/jenkins/agent
-                          resources:
-                            requests:
-                              cpu: "100m"
-                              memory: "256Mi"
-                            limits:
-                              cpu: "500m"
-                              memory: "512Mi"
-                        - name: docker
-                          image: docker:24-dind
-                          securityContext:
-                            privileged: true
-                          env:
-                          - name: DOCKER_TLS_CERTDIR
-                            value: ""
-                          resources:
-                            requests:
-                              cpu: "200m"
-                              memory: "512Mi"
-                            limits:
-                              cpu: "1000m"
-                              memory: "1Gi"
-                          volumeMounts:
-                          - name: docker-storage
-                            mountPath: /var/lib/docker
-                        - name: kubectl
-                          image: bitnami/kubectl:latest
-                          command:
-                          - cat
-                          tty: true
-                          resources:
-                            requests:
-                              cpu: "50m"
-                              memory: "128Mi"
-                            limits:
-                              cpu: "200m"
-                              memory: "256Mi"
-                        volumes:
-                        - name: docker-storage
-                          emptyDir: {}
+                    
+                    containers:
+                      - name: "docker"
+                        image: "docker:24-dind"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        privileged: true
+                        ttyEnabled: true
+                        resourceRequestCpu: "200m"
+                        resourceRequestMemory: "512Mi"
+                        resourceLimitCpu: "1000m"
+                        resourceLimitMemory: "1Gi"
+                        envVars:
+                          - envVar:
+                              key: "DOCKER_TLS_CERTDIR"
+                              value: ""
+                      
+                      - name: "kubectl"
+                        image: "bitnami/kubectl:latest"
+                        alwaysPullImage: false
+                        workingDir: "/home/jenkins/agent"
+                        command: "sleep"
+                        args: "infinity"
+                        ttyEnabled: true
+                        resourceRequestCpu: "50m"
+                        resourceRequestMemory: "128Mi"
+                        resourceLimitCpu: "200m"
+                        resourceLimitMemory: "256Mi"
+                    
+                    volumes:
+                      - emptyDirVolume:
+                          mountPath: "/var/lib/docker"
+                          memory: false
                   
                   # Backend Builder Pod Template (.NET + Docker)
                   - name: "backend-builder"
