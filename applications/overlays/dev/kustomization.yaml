@@ -17,7 +17,7 @@ patchesStrategicMerge:
 images:
 - name: acrftmbackenddev.azurecr.io/ftm-backend
   newName: acrftmbackenddev.azurecr.io/ftm-backend
-  newTag: v1.0.29
+  newTag: v1.0.30
 - name: acrftmfrontenddev.azurecr.io/ftm-frontend
   newName: acrftmfrontenddev.azurecr.io/ftm-frontend
   newTag: v1.0.3
