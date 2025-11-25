@@ -62,7 +62,7 @@ controller:
                 maxRequestsPerHostStr: "32"
                 
                 templates:
-                  # CI/CD Builder with Docker-in-Docker (same as backend-builder)
+                  # CI/CD Builder with Kaniko (no Docker daemon needed)
                   - name: "docker-builder"
                     namespace: "jenkins"
                     label: "docker-builder"
@@ -70,20 +70,16 @@ controller:
                     serviceAccount: "jenkins"
                     
                     containers:
-                      - name: "docker"
-                        image: "docker:24-dind"
+                      - name: "kaniko"
+                        image: "gcr.io/kaniko-project/executor:debug"
                         alwaysPullImage: false
                         workingDir: "/home/jenkins/agent"
-                        privileged: true
+                        command: "/busybox/cat"
                         ttyEnabled: true
                         resourceRequestCpu: "200m"
                         resourceRequestMemory: "512Mi"
                         resourceLimitCpu: "1000m"
                         resourceLimitMemory: "1Gi"
-                        envVars:
-                          - envVar:
-                              key: "DOCKER_TLS_CERTDIR"
-                              value: ""
                       
                       - name: "kubectl"
                         image: "bitnami/kubectl:latest"
@@ -96,11 +92,6 @@ controller:
                         resourceRequestMemory: "128Mi"
                         resourceLimitCpu: "200m"
                         resourceLimitMemory: "256Mi"
-                    
-                    volumes:
-                      - emptyDirVolume:
-                          mountPath: "/var/lib/docker"
-                          memory: false
                   
                   # Backend Builder Pod Template (.NET + Docker)
                   - name: "backend-builder"
